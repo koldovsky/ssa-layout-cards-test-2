@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Masonry Course Layout</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- Basic Setup --- */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 1rem;
+            color: #333;
+        }
+
+        /* --- Controls Panel --- */
+        .controls {
+            max-width: 1200px;
+            margin: 0 auto 1.5rem auto;
+            padding: 1rem 1.5rem;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-grow: 1;
+        }
+
+        .slider-container label {
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        #size-slider {
+            width: 100%;
+            max-width: 300px;
+            cursor: pointer;
+        }
+        
+        #slider-value {
+            font-weight: 700;
+            background-color: #e9ecef;
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            min-width: 45px;
+            text-align: center;
+        }
+
+        #regenerate-btn {
+            padding: 0.6rem 1.2rem;
+            font-size: 1rem;
+            font-weight: 500;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+        }
+
+        #regenerate-btn:hover {
+            background-color: #0056b3;
+        }
+        
+        #regenerate-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* --- Masonry Grid & Cards --- */
+        #masonry-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            box-sizing: border-box; /* Important for padding calculations */
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            
+            /* Flex properties to center content */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        /* The height of large cards is set to be double the height of small cards plus the margin */
+        .card-large {
+            height: 245px;
+            background: linear-gradient(135deg, #6f42c1, #4a148c);
+        }
+
+        .card-small {
+            height: 115px;
+            background: linear-gradient(135deg, #17a2b8, #007bff);
+        }
+        
+        .card-title {
+            font-size: 1rem;
+            font-weight: 500;
+            opacity: 0.8;
+        }
+        
+        .card-number {
+             font-size: 2rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="controls">
+        <div class="slider-container">
+            <label for="size-slider">Small Card %:</label>
+            <input type="range" id="size-slider" min="0" max="100" value="50" aria-label="Percentage of small cards">
+            <span id="slider-value">50%</span>
+        </div>
+        <button id="regenerate-btn">Regenerate</button>
+    </div>
+
+    <div id="masonry-container"></div>
+
+    <!-- Macy.js: A lightweight masonry library -->
+    <script src="https://cdn.jsdelivr.net/npm/macy@2"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DOM Element Selection ---
+            const container = document.getElementById('masonry-container');
+            const slider = document.getElementById('size-slider');
+            const sliderValueDisplay = document.getElementById('slider-value');
+            const regenerateBtn = document.getElementById('regenerate-btn');
+            
+            // --- Configuration ---
+            const totalCards = 30;
+            const gutter = 15; // The space between cards in pixels
+            let macyInstance = null;
+
+            /**
+             * Generates cards and initializes the masonry layout.
+             */
+            function generateAndLayout() {
+                // 1. If a Macy instance already exists, destroy it to allow for regeneration.
+                if (macyInstance) {
+                    macyInstance.remove();
+                }
+
+                // 2. Clear any existing cards from the container.
+                container.innerHTML = '';
+
+                // 3. Get the desired percentage of small cards from the slider.
+                const smallCardPercentage = slider.value;
+                sliderValueDisplay.textContent = `${smallCardPercentage}%`;
+
+                // 4. Create and append the specified number of cards.
+                for (let i = 1; i <= totalCards; i++) {
+                    const card = document.createElement('div');
+                    card.classList.add('card');
+
+                    // Decide card size based on slider percentage and a random number.
+                    const randomNumber = Math.random() * 100;
+                    
+                    let sizeClass, typeText;
+                    if (randomNumber < smallCardPercentage) {
+                        sizeClass = 'card-small';
+                        typeText = 'Small Course';
+                    } else {
+                        sizeClass = 'card-large';
+                        typeText = 'Large Course';
+                    }
+                    card.classList.add(sizeClass);
+                    
+                    // Add some content to the card
+                    card.innerHTML = `
+                        <span class="card-title">${typeText}</span>
+                        <span class="card-number">${i}</span>
+                    `;
+                    
+                    container.appendChild(card);
+                }
+
+                // 5. Initialize the Macy.js library on the container.
+                macyInstance = Macy({
+                    container: '#masonry-container',
+                    // This is the key setting for left-to-right, top-to-bottom ordering.
+                    trueOrder: true, 
+                    waitForImages: false,
+                    // Sets the vertical and horizontal spacing between cards.
+                    margin: gutter, 
+                    // Default to 1 column for mobile devices.
+                    columns: 1,    
+                    // Defines the number of columns at different screen widths.
+                    breakAt: {
+                        1200: 4,   // 4 columns for screens wider than 1200px
+                        940: 3,    // 3 columns for screens wider than 940px
+                        520: 2     // 2 columns for screens wider than 520px
+                    }
+                });
+            }
+
+            // --- Event Listeners ---
+            regenerateBtn.addEventListener('click', generateAndLayout);
+            
+            // Update the percentage display in real-time as the user drags the slider.
+            slider.addEventListener('input', () => {
+                sliderValueDisplay.textContent = `${slider.value}%`;
+            });
+
+            // Regenerate the layout only when the user has finished changing the slider value.
+            slider.addEventListener('change', generateAndLayout);
+
+            // --- Initial Load ---
+            // Generate the first layout when the page loads.
+            generateAndLayout();
+        });
+    </script>
+</body>
+</html>
